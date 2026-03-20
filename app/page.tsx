@@ -186,15 +186,23 @@ export default function Home() {
     );
   }, []);
 
-  const sortedTasks = useMemo(() => {
-    // Ensure completed tasks move to the bottom.
-    const copy = [...tasks];
-    copy.sort((a, b) => {
-      if (a.completed === b.completed) return 0;
-      return a.completed ? 1 : -1;
+  const reorderTasks = useCallback(function reorderTasks(
+    sourceTaskId: string,
+    targetTaskId: string
+  ) {
+    setTasks((prev) => {
+      const sourceIndex = prev.findIndex((task) => task.id === sourceTaskId);
+      const targetIndex = prev.findIndex((task) => task.id === targetTaskId);
+      if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
+        return prev;
+      }
+
+      const next = [...prev];
+      const [movedTask] = next.splice(sourceIndex, 1);
+      next.splice(targetIndex, 0, movedTask);
+      return next;
     });
-    return copy;
-  }, [tasks]);
+  }, []);
 
   const completedCount = useMemo(
     () => tasks.filter((t) => t.completed).length,
@@ -204,14 +212,14 @@ export default function Home() {
   const filteredTasks = useMemo(() => {
     switch (activeFilter) {
       case "Active":
-        return sortedTasks.filter((t) => !t.completed);
+        return tasks.filter((t) => !t.completed);
       case "Completed":
-        return sortedTasks.filter((t) => t.completed);
+        return tasks.filter((t) => t.completed);
       case "All":
       default:
-        return sortedTasks;
+        return tasks;
     }
-  }, [activeFilter, sortedTasks]);
+  }, [activeFilter, tasks]);
 
   const normalizedSearchQuery = debouncedSearchQuery.trim().toLowerCase();
   const visibleTasks = useMemo(() => {
@@ -355,6 +363,7 @@ export default function Home() {
                 ? "No matching tasks for your search."
                 : "No tasks yet. Add one above."
             }
+            onReorderTasks={reorderTasks}
             onUpdateTaskTitle={updateTaskTitle}
             onDeleteTask={deleteTask}
             onToggleTaskComplete={toggleTaskComplete}

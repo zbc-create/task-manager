@@ -2,6 +2,7 @@
 "use client";
 
 import { memo, useEffect, useMemo, useRef, useState } from "react";
+import type { DragEvent } from "react";
 import type { Task } from "@/lib/tasks";
 import {
   formatDueDate,
@@ -12,6 +13,8 @@ import {
 type TaskItemProps = {
   task: Task;
   searchQuery: string;
+  isDragOver?: boolean;
+  onDragHandleStart: (taskId: string, e: DragEvent<HTMLElement>) => void;
   onUpdateTaskTitle: (taskId: string, nextTitle: string) => void;
   onDeleteTask: (taskId: string) => void;
   onToggleTaskComplete: (taskId: string) => void;
@@ -20,6 +23,8 @@ type TaskItemProps = {
 export const TaskItem = memo(function TaskItem({
   task,
   searchQuery,
+  isDragOver = false,
+  onDragHandleStart,
   onUpdateTaskTitle,
   onDeleteTask,
   onToggleTaskComplete,
@@ -117,6 +122,7 @@ export const TaskItem = memo(function TaskItem({
     <div
       className={[
         "w-full rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm transition-all duration-500 ease-out dark:border-zinc-800 dark:bg-black",
+        isDragOver ? "ring-2 ring-zinc-400/60 dark:ring-zinc-500/60" : "",
         hasEntered && !isRemoving
           ? "translate-x-0 translate-y-0 opacity-100"
           : isRemoving
@@ -128,6 +134,28 @@ export const TaskItem = memo(function TaskItem({
       {!isEditing ? (
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1">
+            <button
+              type="button"
+              draggable
+              onDragStart={(e) => onDragHandleStart(task.id, e)}
+              aria-label="Drag to reorder task"
+              title="Drag to reorder"
+              className="mt-0.5 rounded-md p-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-200 cursor-grab active:cursor-grabbing"
+            >
+              <svg
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="h-4 w-4"
+                aria-hidden="true"
+              >
+                <circle cx="6" cy="5" r="1.2" />
+                <circle cx="6" cy="10" r="1.2" />
+                <circle cx="6" cy="15" r="1.2" />
+                <circle cx="14" cy="5" r="1.2" />
+                <circle cx="14" cy="10" r="1.2" />
+                <circle cx="14" cy="15" r="1.2" />
+              </svg>
+            </button>
             <input
               id={`task_${task.id}`}
               type="checkbox"

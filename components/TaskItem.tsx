@@ -14,9 +14,7 @@ type TaskItemProps = {
   task: Task;
   searchQuery: string;
   isDragOver?: boolean;
-  isDragging?: boolean;
   onDragHandleStart: (taskId: string, e: DragEvent<HTMLElement>) => void;
-  onDragHandleEnd: () => void;
   onUpdateTaskTitle: (taskId: string, nextTitle: string) => void;
   onDeleteTask: (taskId: string) => void;
   onToggleTaskComplete: (taskId: string) => void;
@@ -26,9 +24,7 @@ export const TaskItem = memo(function TaskItem({
   task,
   searchQuery,
   isDragOver = false,
-  isDragging = false,
   onDragHandleStart,
-  onDragHandleEnd,
   onUpdateTaskTitle,
   onDeleteTask,
   onToggleTaskComplete,
@@ -127,7 +123,6 @@ export const TaskItem = memo(function TaskItem({
       className={[
         "w-full rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm transition-all duration-500 ease-out dark:border-zinc-800 dark:bg-black",
         isDragOver ? "ring-2 ring-zinc-400/60 dark:ring-zinc-500/60" : "",
-        isDragging ? "scale-[0.99] opacity-70" : "",
         hasEntered && !isRemoving
           ? "translate-x-0 translate-y-0 opacity-100"
           : isRemoving
@@ -143,7 +138,6 @@ export const TaskItem = memo(function TaskItem({
               type="button"
               draggable
               onDragStart={(e) => onDragHandleStart(task.id, e)}
-              onDragEnd={onDragHandleEnd}
               aria-label="Drag to reorder task"
               title="Drag to reorder"
               className="mt-0.5 rounded-md p-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-200 cursor-grab active:cursor-grabbing"

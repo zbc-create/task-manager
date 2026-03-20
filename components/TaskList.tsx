@@ -27,21 +27,33 @@ export const TaskList = memo(function TaskList({
   onToggleTaskComplete,
 }: TaskListProps) {
   const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null);
+  const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
 
   function handleDragStart(taskId: string, e: DragEvent<HTMLElement>) {
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", taskId);
+    setDraggingTaskId(taskId);
+  }
+
+  function handleDragEnd() {
+    setDraggingTaskId(null);
+    setDragOverTaskId(null);
   }
 
   function handleDragOver(taskId: string, e: DragEvent<HTMLLIElement>) {
     e.preventDefault();
     if (dragOverTaskId !== taskId) setDragOverTaskId(taskId);
+
+    if (!draggingTaskId || draggingTaskId === taskId) return;
+    onReorderTasks(draggingTaskId, taskId);
+    setDraggingTaskId(taskId);
   }
 
   function handleDrop(targetTaskId: string, e: DragEvent<HTMLLIElement>) {
     e.preventDefault();
-    const sourceTaskId = e.dataTransfer.getData("text/plain");
+    const sourceTaskId = draggingTaskId || e.dataTransfer.getData("text/plain");
     setDragOverTaskId(null);
+    setDraggingTaskId(null);
     if (!sourceTaskId || sourceTaskId === targetTaskId) return;
     onReorderTasks(sourceTaskId, targetTaskId);
   }
@@ -67,7 +79,9 @@ export const TaskList = memo(function TaskList({
             task={task}
             searchQuery={searchQuery}
             isDragOver={dragOverTaskId === task.id}
+            isDragging={draggingTaskId === task.id}
             onDragHandleStart={handleDragStart}
+            onDragHandleEnd={handleDragEnd}
             onUpdateTaskTitle={onUpdateTaskTitle}
             onDeleteTask={onDeleteTask}
             onToggleTaskComplete={onToggleTaskComplete}
